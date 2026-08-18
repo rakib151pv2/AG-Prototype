@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Search } from 'lucide-react';
 import type { LC, LCStatus } from '../types';
 import {
   getAccruedInterestBDT,
@@ -21,6 +21,7 @@ export default function Register({ lcs }: { lcs: LC[] }) {
   const [sortKey, setSortKey] = useState<SortKey>('maturity');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [statusFilter, setStatusFilter] = useState<LCStatus | 'All'>('All');
+  const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<LC | null>(null);
 
   const rows = useMemo(() => {
@@ -33,8 +34,18 @@ export default function Register({ lcs }: { lcs: LC[] }) {
       interest: getAccruedInterestBDT(lc, today),
     }));
 
-    const filtered =
+    const byStatus =
       statusFilter === 'All' ? enriched : enriched.filter((r) => r.status === statusFilter);
+
+    const query = search.trim().toLowerCase();
+    const filtered = query
+      ? byStatus.filter(
+          (r) =>
+            r.lc.lcNumber.toLowerCase().includes(query) ||
+            r.lc.beneficiary.toLowerCase().includes(query) ||
+            r.lc.issuingBank.toLowerCase().includes(query)
+        )
+      : byStatus;
 
     const sorted = [...filtered].sort((a, b) => {
       let cmp = 0;
@@ -47,7 +58,7 @@ export default function Register({ lcs }: { lcs: LC[] }) {
     });
 
     return sorted;
-  }, [lcs, statusFilter, sortKey, sortDir]);
+  }, [lcs, statusFilter, search, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -62,20 +73,32 @@ export default function Register({ lcs }: { lcs: LC[] }) {
     <div className="rounded-lg border border-slate-200 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">LC Register</h3>
-        <div className="flex items-center gap-1.5">
-          {STATUS_FILTERS.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                statusFilter === s
-                  ? 'bg-slate-800 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search size={13} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search LC #, party, or bank..."
+              className="w-56 rounded-md border border-slate-300 py-1.5 pl-8 pr-2.5 text-xs text-slate-700 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            {STATUS_FILTERS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                  statusFilter === s
+                    ? 'bg-slate-800 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -133,7 +156,7 @@ export default function Register({ lcs }: { lcs: LC[] }) {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={9} className="px-4 py-8 text-center text-sm text-slate-400">
-                  No LCs match this filter.
+                  No LCs match this search/filter.
                 </td>
               </tr>
             )}
