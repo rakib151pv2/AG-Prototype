@@ -45,7 +45,7 @@ export default function LCTrackingModule({
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <nav className="flex gap-1">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button

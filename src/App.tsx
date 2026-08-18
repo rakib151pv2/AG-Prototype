@@ -7,6 +7,7 @@ import type { LC, LoanFacility, Module } from './types';
 import type { ScrutinyChecklist } from './lcScrutiny/types';
 import Login from './components/Login';
 import ModuleHub from './components/ModuleHub';
+import Sidebar from './components/Sidebar';
 import LCTrackingModule from './components/lc/LCTrackingModule';
 import LoanManagementModule from './components/loans/LoanManagementModule';
 import EmailGeneration from './components/email/EmailGeneration';
@@ -36,63 +37,67 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="no-print border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            {activeModule !== 'hub' && (
-              <button
-                onClick={() => setActiveModule('hub')}
-                className="flex items-center gap-1 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                aria-label="Back to modules"
-              >
-                <ArrowLeft size={18} />
-              </button>
-            )}
-            <div>
-              <h1 className="text-lg font-semibold text-slate-800">Ahmed Group AI Project</h1>
-              <p className="text-xs text-slate-500">
-                Accounts &amp; Finance Suite
-                {activeModule !== 'hub' && (
-                  <>
-                    {' '}
-                    · <span className="font-medium text-slate-600">{MODULE_TITLES[activeModule]}</span>
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-xs text-slate-500">Today</p>
-              <p className="text-sm font-medium text-slate-700">
-                {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-              </p>
-            </div>
-            <button
-              onClick={() => setIsAuthenticated(false)}
-              className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-            >
-              <LogOut size={15} />
-              Log Out
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-screen bg-slate-100">
+      {activeModule !== 'hub' && (
+        <Sidebar activeModule={activeModule} onSelect={setActiveModule} onLogout={() => setIsAuthenticated(false)} />
+      )}
 
-      <main className="mx-auto max-w-7xl px-6 py-6">
-        {activeModule === 'hub' && <ModuleHub onSelect={setActiveModule} />}
-        {activeModule === 'lc-tracking' && <LCTrackingModule lcs={lcs} setLcs={setLcs} />}
-        {activeModule === 'loan-management' && (
-          <LoanManagementModule loans={loans} setLoans={setLoans} lcs={lcs} />
-        )}
-        {activeModule === 'email-generation' && <EmailGeneration />}
-        {activeModule === 'bank-charges' && <BankChargePrep lcs={lcs} />}
-        {activeModule === 'yarn-costing' && <YarnCostingModule />}
-        {activeModule === 'lc-scrutiny' && (
-          <LcScrutinyModule checklists={scrutinyChecklists} setChecklists={setScrutinyChecklists} lcs={lcs} />
-        )}
-      </main>
+      <div className="min-w-0 flex-1">
+        <header className="no-print border-b border-slate-200 bg-white">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-3">
+              {activeModule !== 'hub' && (
+                <button
+                  onClick={() => setActiveModule('hub')}
+                  className="flex items-center gap-1 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  aria-label="Back to modules"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+              )}
+              <div>
+                <h1 className="text-lg font-semibold text-slate-800">
+                  {activeModule === 'hub' ? 'Ahmed Group AI Project' : MODULE_TITLES[activeModule]}
+                </h1>
+                <p className="text-xs text-slate-500">Accounts &amp; Finance Suite</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-xs text-slate-500">Today</p>
+                <p className="text-sm font-medium text-slate-700">
+                  {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
+              {activeModule === 'hub' && (
+                <button
+                  onClick={() => setIsAuthenticated(false)}
+                  className="flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                >
+                  <LogOut size={15} />
+                  Log Out
+                </button>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <main className="pl-6 pr-2 py-4">
+          <div className="mx-auto max-w-[1500px]">
+            {activeModule === 'hub' && <ModuleHub onSelect={setActiveModule} />}
+            {activeModule === 'lc-tracking' && <LCTrackingModule lcs={lcs} setLcs={setLcs} />}
+            {activeModule === 'loan-management' && (
+              <LoanManagementModule loans={loans} setLoans={setLoans} lcs={lcs} />
+            )}
+            {activeModule === 'email-generation' && <EmailGeneration />}
+            {activeModule === 'bank-charges' && <BankChargePrep lcs={lcs} />}
+            {activeModule === 'yarn-costing' && <YarnCostingModule />}
+            {activeModule === 'lc-scrutiny' && (
+              <LcScrutinyModule checklists={scrutinyChecklists} setChecklists={setScrutinyChecklists} lcs={lcs} />
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
