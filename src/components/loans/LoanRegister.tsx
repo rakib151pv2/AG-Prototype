@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Search } from 'lucide-react';
 import type { LoanFacility, LoanStatus } from '../../types';
 import { getLoanAccruedInterestBDT, getLoanOutstandingBDT, getLoanStatus } from '../../loanSelectors';
 import { formatBDT, formatDate, formatMoney } from '../../formatters';
@@ -15,7 +15,11 @@ export default function LoanRegister({ loans }: { loans: LoanFacility[] }) {
   const [sortKey, setSortKey] = useState<SortKey>('maturity');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [statusFilter, setStatusFilter] = useState<LoanStatus | 'All'>('All');
+  const [unitFilter, setUnitFilter] = useState('All');
+  const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<LoanFacility | null>(null);
+
+  const units = useMemo(() => Array.from(new Set(loans.map((l) => l.unit))).sort(), [loans]);
 
   const rows = useMemo(() => {
     const today = new Date();
@@ -26,7 +30,16 @@ export default function LoanRegister({ loans }: { loans: LoanFacility[] }) {
       interest: getLoanAccruedInterestBDT(loan, today),
     }));
 
-    const filtered = statusFilter === 'All' ? enriched : enriched.filter((r) => r.status === statusFilter);
+    const byStatus = statusFilter === 'All' ? enriched : enriched.filter((r) => r.status === statusFilter);
+    const byUnit = unitFilter === 'All' ? byStatus : byStatus.filter((r) => r.loan.unit === unitFilter);
+
+    const query = search.trim().toLowerCase();
+    const filtered = query
+      ? byUnit.filter(
+          (r) =>
+            r.loan.facilityNumber.toLowerCase().includes(query) || r.loan.bank.toLowerCase().includes(query)
+        )
+      : byUnit;
 
     return [...filtered].sort((a, b) => {
       let cmp = 0;
@@ -37,7 +50,7 @@ export default function LoanRegister({ loans }: { loans: LoanFacility[] }) {
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [loans, statusFilter, sortKey, sortDir]);
+  }, [loans, statusFilter, unitFilter, search, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -52,18 +65,42 @@ export default function LoanRegister({ loans }: { loans: LoanFacility[] }) {
     <div className="rounded-lg border border-slate-200 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">Facility Register</h3>
-        <div className="flex items-center gap-1.5">
-          {STATUS_FILTERS.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                statusFilter === s ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search size={13} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search facility # or bank..."
+              className="w-52 rounded-md border border-slate-300 py-1.5 pl-8 pr-2.5 text-xs text-slate-700 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            />
+          </div>
+          <select
+            value={unitFilter}
+            onChange={(e) => setUnitFilter(e.target.value)}
+            className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-600 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          >
+            <option value="All">All Units</option>
+            {units.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center gap-1.5">
+            {STATUS_FILTERS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                  statusFilter === s ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -113,7 +150,7 @@ export default function LoanRegister({ loans }: { loans: LoanFacility[] }) {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={9} className="px-4 py-8 text-center text-sm text-slate-400">
-                  No facilities match this filter.
+                  No facilities match this search/filter.
                 </td>
               </tr>
             )}

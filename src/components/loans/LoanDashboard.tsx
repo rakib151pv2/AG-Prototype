@@ -22,6 +22,7 @@ import {
 import { formatBDT, formatDate, formatNumber } from '../../formatters';
 import KpiCard from '../KpiCard';
 import LoanStatusBadge from './LoanStatusBadge';
+import LoanUnitMatrix from './LoanUnitMatrix';
 
 const LOAN_TYPE_ORDER: LoanType[] = ['STL', 'UPAS', 'OD', 'EDF'];
 // Validated categorical palette (node scripts/validate_palette.js — light mode, all-pairs PASS).
@@ -89,6 +90,8 @@ export default function LoanDashboard({ loans }: { loans: LoanFacility[] }) {
           tone={totalInterest > 0 ? 'warning' : 'default'}
         />
       </div>
+
+      <LoanUnitMatrix loans={loans} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <div className="rounded-lg border border-slate-200 bg-white p-4 lg:col-span-3">

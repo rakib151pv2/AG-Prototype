@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { LayoutDashboard, Plus, Table2 } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { LC, LoanFacility } from '../../types';
-import { UNITS } from '../../sampleData';
+import { LOAN_UNITS } from '../../sampleLoans';
 import LoanDashboard from './LoanDashboard';
 import LoanRegister from './LoanRegister';
 import CreateFacilityModal from './CreateFacilityModal';
@@ -69,7 +69,7 @@ export default function LoanManagementModule({
 
       {showCreate && (
         <CreateFacilityModal
-          units={UNITS}
+          units={LOAN_UNITS}
           lcNumbers={lcNumbers}
           responsiblePersons={responsiblePersons}
           onClose={() => setShowCreate(false)}
